@@ -3,7 +3,7 @@
 This repository provides examples and scripts to help you get started with using High-Performance Computing (HPC) for NLP research. The examples cover basic job submissions, using GPUs, and dynamically creating job scripts.
 
 ```sh
-git clone ......
+git clone https://github.com/TomMoeras/hpc_lt3_tutorial
 cd hpc_lt3_tutorial
 ```
 
