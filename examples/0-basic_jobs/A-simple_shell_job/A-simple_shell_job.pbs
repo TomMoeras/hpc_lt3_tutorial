@@ -1,0 +1,30 @@
+#!/bin/bash -l
+#PBS -l nodes=1:ppn=4
+#PBS -l mem=16gb
+#PBS -l walltime=00:05:00
+#PBS -N simple_shell_job
+#PBS -m abe
+
+echo "Starting job on $(hostname)"
+echo "Job started on $(date)"
+
+echo "Hello, HPC!"
+echo "Manipulated String: $(echo 'Hello, HPC!' | tr 'A-Z' 'a-z')"
+echo "Counting to 10:"
+for i in {1..10}; do echo $i; done
+
+# Simple Fibonacci calculation
+function fibonacci {
+    a=0
+    b=1
+    for (( i=0; i<$1; i++ )); do
+        echo -n "$a "
+        fn=$((a + b))
+        a=$b
+        b=$fn
+    done
+    echo
+}
+
+echo "Fibonacci sequence up to 10:"
+fibonacci 10

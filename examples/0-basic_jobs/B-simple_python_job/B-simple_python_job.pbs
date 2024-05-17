@@ -1,0 +1,23 @@
+#!/bin/bash -l
+#PBS -l nodes=1:ppn=4
+#PBS -l mem=16gb
+#PBS -l walltime=00:05:00
+#PBS -N simple_python_job
+#PBS -m abe
+
+echo "Starting job on $(hostname)"
+echo "Job started on $(date)"
+
+echo "Loading Python module" # you can look for other versions of Python with `module spider Python/3`
+
+module load Python/3.10.4-GCCcore-11.3.0
+
+# Change to the directory from which the job script was submitted
+cd $PBS_O_WORKDIR
+
+echo "PBS working directory is $PBS_O_WORKDIR"
+
+echo "Running Python script"
+python B-simple_python_script.py
+
+echo "Finished running Python script"

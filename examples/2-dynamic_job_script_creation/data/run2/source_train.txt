@@ -1,0 +1,3 @@
+NLP tasks are fun
+Learning PyTorch on HPC
+Training with data

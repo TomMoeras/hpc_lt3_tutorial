@@ -1,0 +1,28 @@
+#!/bin/bash -l
+#PBS -m abe
+
+echo "Starting job on $(hostname)"
+echo "Job started on $(date)"
+
+# Loading the PyTorch module which has a Python version included
+module load PyTorch/2.1.2-foss-2023a-CUDA-12.1.1
+
+echo "Current Python interpreter:"
+which python
+
+cd $PBS_O_WORKDIR
+
+# Check CUDA version
+echo "Checking CUDA version for PyTorch and Environment:"
+python -c "import torch; print(torch.version.cuda)"
+
+# Check GPU availability
+echo "Checking GPU availability:"
+nvidia-smi
+
+echo "Starting the Python script..."
+
+# Run the Python script passed to this script
+eval $COMMAND
+
+echo "Python script has finished running."

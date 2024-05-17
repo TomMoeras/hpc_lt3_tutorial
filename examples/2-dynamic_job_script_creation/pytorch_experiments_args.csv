@@ -1,0 +1,3 @@
+source_train,target_train,source_dev,target_dev,source_test,target_test,walltime,nodes,ppn,gpus,mem
+data/run1/source_train.txt,data/run1/target_train.txt,data/run1/source_dev.txt,data/run1/target_dev.txt,data/run1/source_test.txt,data/run1/target_test.txt,00:10:00,1,8,1,16gb
+data/run2/source_train.txt,data/run2/target_train.txt,data/run2/source_dev.txt,data/run2/target_dev.txt,data/run2/source_test.txt,data/run2/target_test.txt,00:20:00,1,8,1,16gb
