@@ -12,28 +12,28 @@ cd hpc_lt3_tutorial
 hpc_lt3_tutorial/
 ├── README.md
 ├── examples/
-│   ├── 0-basic_jobs/
-│   │   ├── A-simple_shell_job/
-│   │   │   ├── A-simple_shell_job.pbs
-│   │   ├── B-simple_python_job/
-│   │   │   ├── B-simple_python_job.pbs
-│   │   │   ├── B-simple_python_script.py
-│   ├── 1-using_gpu/
-│   │   ├── gpu_pytorch_job.pbs
-│   │   ├── gpu_pytorch_script.py
-│   ├── 2-dynamic_job_script_creation/
-│   │   ├── create_pytorch_data.sh
-│   │   ├── create_pytorch_dynamic_job.sh
-│   │   ├── gpu_pytorch_script.py
-│   │   ├── pytorch_experiments_args.csv
-│   │   ├── train_pytorch_job.pbs
-│   │   └── data/
-│   ├── 3-finetuning_llm/
-│       ├── environment.yml
-│       ├── finetune_llm_job.pbs
-│       ├── requirements.txt
-│       ├── data/
-│       ├── src/
+│ ├── 0-basic_jobs/
+│ │ ├── A-simple_shell_job/
+│ │ │ ├── A-simple_shell_job.pbs
+│ │ ├── B-simple_python_job/
+│ │ │ ├── B-simple_python_job.pbs
+│ │ │ ├── B-simple_python_script.py
+│ ├── 1-using_gpu/
+│ │ ├── gpu_pytorch_job.pbs
+│ │ ├── gpu_pytorch_script.py
+│ ├── 2-dynamic_job_script_creation/
+│ │ ├── create_pytorch_data.sh
+│ │ ├── create_pytorch_dynamic_job.sh
+│ │ ├── gpu_pytorch_script.py
+│ │ ├── pytorch_experiments_args.csv
+│ │ ├── train_pytorch_job.pbs
+│ │ └── data/
+│ ├── 3-finetuning_llm/
+│ ├── environment.yml
+│ ├── finetune_llm_job.pbs
+│ ├── requirements.txt
+│ ├── data/
+│ ├── src/
 
 ## Getting Started
 
