@@ -69,6 +69,7 @@ Navigate to the GPU job directory and submit the job script.
 
 ```sh
 cd examples/1-using_gpu
+ml swap cluster/accelgor
 qsub gpu_pytorch_job.pbs
 ```
 
@@ -80,6 +81,7 @@ This example demonstrates how to dynamically create and submit job scripts based
 
 ```sh
 cd examples/2-dynamic_job_script_creation
+ml swap cluster/accelgor
 source create_pytorch_dynamic_job.sh
 ```
 
@@ -91,6 +93,7 @@ Navigate to the fine-tuning LLM job directory and submit the job script.
 
 ```sh
 cd examples/3-finetuning_llm
+ml swap cluster/accelgor
 qsub finetune_llm_job.pbs
 ```
 
