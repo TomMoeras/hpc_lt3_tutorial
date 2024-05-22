@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #PBS -l nodes=1:ppn=24:gpus=1
-#PBS -l mem=40gb
-#PBS -l walltime=05:00:00
+#PBS -l mem=32gb
+#PBS -l walltime=01:00:00
 #PBS -N FineTuneLLM
 #PBS -m abe
 

@@ -1,26 +1,22 @@
-# taken and adapted from https://github.com/brevdev/notebooks/blob/main/llama3_finetune_inference.ipynb
-
 import os
 import torch
 from datasets import load_dataset
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
-    BitsAndBytesConfig,
-    HfArgumentParser,
     TrainingArguments,
-    pipeline,
     logging,
+    BitsAndBytesConfig,
 )
-from peft import LoraConfig, PeftModel
+from peft import LoraConfig, get_peft_model
 from trl import SFTTrainer
-
 from accelerate import FullyShardedDataParallelPlugin, Accelerator
 from torch.distributed.fsdp.fully_sharded_data_parallel import (
     FullOptimStateDictConfig,
     FullStateDictConfig,
 )
 
+# Setup FSDP plugin and accelerator
 fsdp_plugin = FullyShardedDataParallelPlugin(
     state_dict_config=FullStateDictConfig(offload_to_cpu=True, rank0_only=False),
     optim_state_dict_config=FullOptimStateDictConfig(
@@ -30,88 +26,72 @@ fsdp_plugin = FullyShardedDataParallelPlugin(
 
 accelerator = Accelerator(fsdp_plugin=fsdp_plugin)
 
+# Model and dataset configuration
 base_model_id = "meta-llama/Meta-Llama-3-8B"
 dataset_name = "scooterman/guanaco-llama3-1k"
-new_model = "hpc_lt3_tutorial-llama3-8b-SFT"
+new_model = "hpc_lt3_tutorial-llama3-8b-QLORA"
 
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+# Load dataset
+dataset = load_dataset(dataset_name, split="train")
 
-model = AutoModelForCausalLM.from_pretrained(base_model_id, device_map="auto")
+# Load model and tokenizer with BnB quantization
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,  # Enable 4-bit quantization
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.float16,
+)
+
+model = AutoModelForCausalLM.from_pretrained(
+    base_model_id, device_map="auto", quantization_config=bnb_config
+)
 tokenizer = AutoTokenizer.from_pretrained(
-    base_model_id,
-    add_eos_token=True,
-    add_bos_token=True,
+    base_model_id, add_eos_token=True, add_bos_token=True
 )
 tokenizer.pad_token = tokenizer.eos_token
 
-# Output directory where the results and checkpoint are stored
-output_dir = "./results"
-
-# Number of training epochs - how many times does the model see the whole dataset
-num_train_epochs = 1  # Increase this for a larger finetune
-
-# Enable fp16/bf16 training. This is the type of each weight. Since we are on an A100
-# we can set bf16 to true because it can handle that type of computation
-bf16 = True
-
-# Batch size is the number of training examples used to train a single forward and backward pass.
-per_device_train_batch_size = 4
-
-# Gradients are accumulated over multiple mini-batches before updating the model weights.
-# This allows for effectively training with a larger batch size on hardware with limited memory
-gradient_accumulation_steps = 2
-
-# memory optimization technique that reduces RAM usage during training by intermittently storing
-# intermediate activations instead of retaining them throughout the entire forward pass, trading
-# computational time for lower memory consumption.
-gradient_checkpointing = True
-
-# Maximum gradient normal (gradient clipping)
-max_grad_norm = 0.3
-
-# Initial learning rate (AdamW optimizer)
-learning_rate = 2e-4
-
-# Weight decay to apply to all layers except bias/LayerNorm weights
-weight_decay = 0.001
-
-# Optimizer to use
-optim = "paged_adamw_32bit"
-
-# Number of training steps (overrides num_train_epochs)
-max_steps = 5
-
-# Ratio of steps for a linear warmup (from 0 to learning rate)
-warmup_ratio = 0.03
-
-# Group sequences into batches with same length
-# Saves memory and speeds up training considerably
-group_by_length = True
-
-# Save checkpoint every X updates steps
-save_steps = 100
-
-# Log every X updates steps
-logging_steps = 5
-
-training_arguments = TrainingArguments(
-    output_dir=output_dir,
-    num_train_epochs=num_train_epochs,
-    per_device_train_batch_size=per_device_train_batch_size,
-    gradient_accumulation_steps=gradient_accumulation_steps,
-    optim=optim,
-    save_steps=save_steps,
-    logging_steps=logging_steps,
-    learning_rate=learning_rate,
-    weight_decay=weight_decay,
-    bf16=bf16,
-    max_grad_norm=max_grad_norm,
-    max_steps=max_steps,
-    warmup_ratio=warmup_ratio,
-    group_by_length=group_by_length,
+# Configure LoRA
+lora_config = LoraConfig(
+    r=8,
+    lora_alpha=32,
+    target_modules=["q_proj", "v_proj"],
+    lora_dropout=0.1,
+    bias="none",
 )
 
+# Apply LoRA to the model
+model = get_peft_model(model, lora_config)
+
+try:
+    # Ensure all parameters requiring gradients
+    for param in model.parameters():
+        param.requires_grad = True
+except Exception as e:
+    print(f"An error occurred: {str(e)}")
+
+# Output directory for results and checkpoints
+output_dir = "./results"
+
+# Training parameters
+training_arguments = TrainingArguments(
+    output_dir=output_dir,
+    num_train_epochs=1,
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=2,
+    optim="paged_adamw_32bit",
+    save_steps=100,
+    logging_steps=5,
+    learning_rate=2e-4,
+    weight_decay=0.001,
+    bf16=True,
+    max_grad_norm=0.3,
+    max_steps=5,
+    warmup_ratio=0.03,
+    group_by_length=True,
+    gradient_checkpointing=True,
+)
+
+# Initialize the trainer
 trainer = SFTTrainer(
     model=model,
     train_dataset=dataset,
@@ -120,7 +100,8 @@ trainer = SFTTrainer(
     args=training_arguments,
 )
 
+# Start training
 trainer.train()
 
-# Save trained model
+# Save the trained model
 trainer.model.save_pretrained(new_model)
